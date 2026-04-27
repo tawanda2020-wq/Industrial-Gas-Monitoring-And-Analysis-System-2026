@@ -239,12 +239,14 @@ body::before {
 
 /* ── SECTION LABEL ──────────────────────────────────────── */
 .slbl {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: var(--dim);
-  margin: 4px 0 10px;
+  color: var(--sub);
+  margin: 18px 0 10px;
+  border-left: 3px solid var(--accent);
+  padding-left: 10px;
 }
 
 /* ── ALERT BANNER ───────────────────────────────────────── */
@@ -721,6 +723,40 @@ tbody tr:hover td {
 .lbadge.d {
   background: rgba(239, 68, 68, 0.14);
   color: var(--danger);
+}
+
+/* ════════════════════════════════════════════════════════════
+   AI CHART PANELS
+   ════════════════════════════════════════════════════════════ */
+.ai-chart-inner {
+  position: relative;
+  height: 200px;
+  margin: 14px 0 16px;
+}
+
+.ai-explain-box {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 13px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--sub);
+  line-height: 1.6;
+}
+
+.ai-explain-box strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.trow-hint {
+  font-size: 10px;
+  color: var(--dim);
+  font-style: italic;
+  display: block;
+  margin-top: 2px;
+  line-height: 1.4;
 }
 
 /* ── FOOTER ─────────────────────────────────────────────── */
