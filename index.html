@@ -18,7 +18,7 @@
     src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 
   <!-- ══════════════════════════════════════════════════════════
-     FIREBASE SDK - loads only in cloud mode (non-hotspot, non-file).
+     FIREBASE SDK - loads only in cloud mode.
      ══════════════════════════════════════════════════════════ -->
   <script type="module">
     if (window.location.hostname !== '192.168.4.1' &&
@@ -208,6 +208,132 @@ onValue(ref(db,'/igmau/alertHistory'), s => s.exists() && safeCall('_onHistory',
       <div class="chart-inner"><canvas id="chart"></canvas></div>
     </div>
 
+    <!-- ── AI PREDICTIVE ANALYSIS ────────────────────────────── -->
+<p class="slbl">AI Predictive Analysis</p>
+<div class="g2">
+
+  <!-- CARD 1: Linear Regression -->
+  <div class="card" id="cAI1">
+    <div class="ctitle">
+      <span class="cdot" style="background:#f59e0b"></span>
+      Prediction Engine · Linear Regression
+    </div>
+
+    <!-- Plain-English explain box -->
+    <div class="ai-explain-box">
+      The AI fits a <strong>trend line</strong> through the last 20 sensor readings (40 seconds of data).
+      It then extends that line forward to predict <strong>when gas levels will reach dangerous thresholds</strong>.
+      If gas is rising, it tells you how many seconds or minutes you have before action is needed.
+    </div>
+
+    <!-- Mini forecast chart -->
+    <div class="ai-chart-inner"><canvas id="aiChart1"></canvas></div>
+
+    <div class="trow">
+      <span class="tlbl">📈 MQ-2 trend
+        <span class="trow-hint">Is combustible gas rising, falling or stable?</span>
+      </span>
+      <span class="tval" id="aiT2">-</span>
+    </div>
+    <div class="trow">
+      <span class="tlbl">📈 MQ-135 trend
+        <span class="trow-hint">Is air-quality gas rising, falling or stable?</span>
+      </span>
+      <span class="tval" id="aiT135">-</span>
+    </div>
+    <div class="trow">
+      <span class="tlbl">⏱ ETA to warning
+        <span class="trow-hint">Estimated time until gas hits the ⚠ warning level (if currently rising)</span>
+      </span>
+      <span class="tval w" id="aiEtaW">-</span>
+    </div>
+    <div class="trow">
+      <span class="tlbl">🔴 ETA to danger
+        <span class="trow-hint">Estimated time until gas hits the 🔴 danger level (if currently rising)</span>
+      </span>
+      <span class="tval d" id="aiEtaD">-</span>
+    </div>
+    <div class="trow">
+      <span class="tlbl">🎯 Risk score
+        <span class="trow-hint">0 = no risk · 100 = critical. Combines current level, rate of rise &amp; anomalies</span>
+      </span>
+      <span class="tval" id="aiRisk">-</span>
+    </div>
+    <div class="trow">
+      <span class="tlbl">MQ-2 slope
+        <span class="trow-hint">How fast the combustible-gas level is changing per 2-second reading</span>
+      </span>
+      <span class="tval" id="aiSlope2">-</span>
+    </div>
+    <div class="trow">
+      <span class="tlbl">MQ-2 R² (confidence)
+        <span class="trow-hint">How well the trend line fits the data. 1.0 = perfect fit; near 0 = erratic/no clear trend</span>
+      </span>
+      <span class="tval" id="aiR2">-</span>
+    </div>
+  </div>
+
+  <!-- CARD 2: Z-Score Anomaly -->
+  <div class="card" id="cAI2">
+    <div class="ctitle">
+      <span class="cdot" style="background:#a78bfa"></span>
+      Anomaly Detection · Z-Score
+    </div>
+
+    <!-- Plain-English explain box -->
+    <div class="ai-explain-box">
+      The AI monitors what is <strong>"normal"</strong> for this environment (last 20 readings).
+      If a new reading is <strong>unusually far from normal</strong> (Z &gt; 2.5), it flags an <strong>ANOMALY</strong> —
+      a sudden unexpected spike that slow threshold alarms would miss entirely.
+    </div>
+
+    <!-- Mini Z-score chart -->
+    <div class="ai-chart-inner"><canvas id="aiChart2"></canvas></div>
+
+    <div class="trow">
+      <span class="tlbl">MQ-2 anomaly
+        <span class="trow-hint">NORMAL = within expected range · ANOMALY = sudden unusual spike detected</span>
+      </span>
+      <span id="aiAnom2" class="schip schip-safe">NORMAL</span>
+    </div>
+    <div class="trow">
+      <span class="tlbl">MQ-135 anomaly
+        <span class="trow-hint">NORMAL = within expected range · ANOMALY = sudden unusual spike detected</span>
+      </span>
+      <span id="aiAnom135" class="schip schip-safe">NORMAL</span>
+    </div>
+    <div class="trow">
+      <span class="tlbl">MQ-2 Z-score
+        <span class="trow-hint">How many "standard deviations" the latest reading is from the recent average. &gt;2.5 = anomaly</span>
+      </span>
+      <span class="tval" id="aiZ2">-</span>
+    </div>
+    <div class="trow">
+      <span class="tlbl">MQ-135 Z-score
+        <span class="trow-hint">Same measure for air-quality sensor. A sudden gas burst registers here first</span>
+      </span>
+      <span class="tval" id="aiZ135">-</span>
+    </div>
+    <div class="trow">
+      <span class="tlbl">MQ-2 mean (window)
+        <span class="trow-hint">Average combustible-gas reading over the last 20 readings — the "normal baseline"</span>
+      </span>
+      <span class="tval" id="aiMean2">-</span>
+    </div>
+    <div class="trow">
+      <span class="tlbl">MQ-2 std dev (σ)
+        <span class="trow-hint">How much the readings typically wobble up/down. Small = steady; large = variable environment</span>
+      </span>
+      <span class="tval" id="aiStd2">-</span>
+    </div>
+    <div style="margin-top:10px;font-size:10px;color:var(--dim);line-height:1.6">
+      <strong style="color:var(--sub)">How to read this:</strong>
+      Z &gt; 2.5 flags an anomaly · Window = last 20 readings (40 s) · Updates every 2 s
+    </div>
+  </div>
+
+</div>
+
     <!-- ── ALERT HISTORY ────────────────────────────────────── -->
     <p class="slbl">Alert History Log</p>
     <div class="card" style="margin-bottom:22px;">
@@ -249,7 +375,8 @@ onValue(ref(db,'/igmau/alertHistory'), s => s.exists() && safeCall('_onHistory',
   <!-- ══════════════════════════════════════════════════════════
      JAVASCRIPT
      ══════════════════════════════════════════════════════════ -->
-  <script src="index.js"></script>
+  <!--   <script src="index.js"></script>  -->
+  <script type="module" src="index.js"></script>
 </body>
 
 </html>
